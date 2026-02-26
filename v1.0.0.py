@@ -282,13 +282,39 @@ def run_client(args):
     finally: termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old); print("\nClosed.")
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument("user", nargs="?"); p.add_argument("host", nargs="?")
+    p = argparse.ArgumentParser(
+        prog="httpshell.py",
+        description="Secure HTTPS remote shell",
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog="""
+Modes:
+  Client:
+    httpshell.py user host [-p PORT]
+
+  Server:
+    httpshell.py --server [-p PORT]
+
+  Install service:
+    httpshell.py --server-install [-p PORT]
+
+Exit session with Ctrl+]
+"""
+    )
+    p.add_argument("user", nargs="?")
+    p.add_argument("host", nargs="?")
     p.add_argument("-p", "--port", type=int, default=8443)
-    p.add_argument("--server", action="store_true"); p.add_argument("--server-install", action="store_true"); p.add_argument("--no-tls", action="store_true")
+    p.add_argument("--server", action="store_true")
+    p.add_argument("--server-install", action="store_true")
+    p.add_argument("--no-tls", action="store_true")
+    if len(sys.argv) == 1:
+        p.print_help()
+        sys.exit(0)
     args = p.parse_args()
     if args.server_install: install_service(args.port)
     elif args.server:
-        try: asyncio.run(run_server(args.port, not args.no_tls))
-        except KeyboardInterrupt: cleanup_and_exit()
-    elif args.user and args.host: run_client(args)
+        try:
+            asyncio.run(run_server(args.port, not args.no_tls))
+        except KeyboardInterrupt:
+            cleanup_and_exit()
+    elif args.user and args.host:
+        run_client(args)
