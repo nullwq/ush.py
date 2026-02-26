@@ -6,6 +6,7 @@
 #     "starlette",
 #     "uvicorn",
 #     "python-pam",
+#     "six",
 # ]
 # requires-python = "==3.11.*"
 # ///
@@ -78,7 +79,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStart=!/usr/bin/env -S uv run {dest_script} --server -p {port}
+ExecStart=/usr/bin/env -S uv run {dest_script} --server -p {port}
 Restart=always
 RestartSec=5
 WorkingDirectory={BASE_DIR}
