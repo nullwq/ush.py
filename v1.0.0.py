@@ -240,7 +240,7 @@ def run_client(args):
             ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
             with ctx.wrap_socket(sk, server_hostname=args.host) as ss:
                 pub_rsa = x509.load_der_x509_certificate(ss.getpeercert(binary_form=True)).public_key()
-        except: sys.exit("Handshake failed.")
+        except: sys.exit("This server is down or running with --no-tls or another port.")
     else:
         with open(CERT_PEM, "rb") as f: pub_rsa = x509.load_pem_x509_certificate(f.read()).public_key()
     cx = x25519.X25519PrivateKey.generate()
