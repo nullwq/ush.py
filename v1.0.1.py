@@ -345,7 +345,7 @@ def ensure_caddy(port, use_tls=True):
         with tarfile.open(f"{BASE_DIR}/caddy.tar.gz", "r:gz") as tar: tar.extract("caddy", path=BASE_DIR)
         os.chmod(CADDY_PATH, 0o755)
     tls = f"tls {CERT_PEM} {KEY_PEM}" if use_tls else "# No TLS"
-    cfg = f":{port} {{\n {tls}\n @shell path /auth /pull /push @/resize\n handle @shell {{\n rewrite * {{path}}?i={{remote_host}}\n reverse_proxy 127.0.0.1:269\n }}\n}}"
+    cfg = f":{port} {{\n {tls}\n @shell path /auth /pull /push /resize\n handle @shell {{\n rewrite * {{path}}?i={{remote_host}}\n reverse_proxy 127.0.0.1:269\n }}\n}}"
     with open(CADDY_CFG, "w") as f: f.write(cfg)
     subprocess.run(["pkill", "-f", CADDY_PATH], stderr=subprocess.DEVNULL)
     subprocess.Popen([CADDY_PATH, "run", "--config", CADDY_CFG], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
