@@ -90,7 +90,6 @@ WantedBy=multi-user.target
     svc_file = "/etc/systemd/system/httpshell.service"
     with open(svc_file, "w") as f: 
         f.write(service_content)
-    subprocess.run(["systemctl", "daemon-reload"], check=True)
     subprocess.run(["systemctl", "enable", "--now", "httpshell.service"], check=True)
     print(f"[*] HTTPShell installed to {dest_script}")
     print(f"[*] Service active on :{port}")
@@ -280,7 +279,7 @@ def run_client(args):
                 c = os.read(sys.stdin.fileno(), 1024)
                 if b'\x1d' in c: dead[0] = True; break
                 buf.append(c)
-    finally: termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old); print("\nClosed.")
+    finally: termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old); print("\nConnection Closed.")
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(
