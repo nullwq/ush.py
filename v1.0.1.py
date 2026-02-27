@@ -404,7 +404,7 @@ def run_client(args):
         sys.exit("Connection error.")
 
     if r.status_code != 200:
-        sys.exit("Denied.")
+        sys.exit("Permission denied, please try again.")
 
     res = r.json()
     sh = cx.exchange(x25519.X25519PublicKey.from_public_bytes(base64.b64decode(res['srvx'])))
