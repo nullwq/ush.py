@@ -30,7 +30,7 @@ Download the single file from Releases:
 
 Example: wget
 ```
-sudo wget https://github.com/lspm-pkg/HTTPshell.py/releases/download/v1.0.0/HTTPshell.py -O /usr/bin/httpshell.py
+sudo wget https://github.com/lspm-pkg/HTTPshell.py/releases/download/v1.0.1/HTTPshell.py -O /usr/bin/httpshell.py
 ```
 
 Make it executeable using `chmod +x /usr/bin/httpshell.py`.
