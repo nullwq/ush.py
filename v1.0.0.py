@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import os, sys, tty, termios, select, threading, queue, fcntl, struct, signal, json, time, argparse, requests
+import os, sys, tty, termios, select, threading, queue, fcntl, struct, signal, json, time, argparse
 from http.server import BaseHTTPRequestHandler, HTTPServer
-M_BUF, MAX_Q, sess, lock = 1024*1024, 50, {}, threading.Lock()
+M_BUF, MAX_Q, sess = 1024*1024, 50, {}
 class H(BaseHTTPRequestHandler):
     def _s(self, d=b"", c=200): self.send_response(c); self.end_headers(); self.wfile.write(d)
     def do_POST(self):
@@ -34,6 +34,7 @@ class H(BaseHTTPRequestHandler):
         sess.pop(id, None)
 def get_ws(): return struct.unpack("HHHH", fcntl.ioctl(0, 21523, b'\x00'*8))[:2]
 def run_c(h, p):
+    import requests
     S, d_ed, buf, ev = requests.Session(), [0], [], threading.Event(); r, c = get_ws(); url = f"http://{h}:{p}"
     try: sid = S.post(f"{url}/auth", json={"rows": r, "cols": c}).json()["sid"]
     except: return print("Fail")
