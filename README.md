@@ -1,98 +1,85 @@
-# HTTPShell.py
+# ush.py (Unsecure Shell over HTTP)
 
-HTTPShell.py is a single‑file remote shell that works entirely over HTTP or HTTPS. It is designed for environments where direct inbound TCP or UDP access is blocked, an example like GCNAT/NAT, but HTTP or HTTPS access is allowed.
+`ush.py` is an evolution of HTTPshell.py. It is a single-file, dependency-minimal remote shell that operates entirely over HTTP. It is specifically optimized for extremely resource-constrained environments (like 32MB RAM) and networks where inbound TCP access is restricted by GCNAT or aggressive firewalls.
 
-It acts as both client and server, and works over standard web infrastructure outbound connections.
+By leveraging a PTY-based approach and smart backpressure management, `ush.py` provides a full interactive terminal experience over standard web traffic.
+
+> [!IMPORTANT]
+> ush.py IS EXTREMELY UNSECURE. Traffic is sent in plain text. If there is a sniffer or a Man-In-The-Middle (MITM) on the network, your credentials and session data will be stolen.
+>
+> If you require built-in encryption or even more security, use [HTTPshell.py](https://github.com/lspm-pkg/HTTPshell.py) instead. ush.py should only be used over trusted local networks or behind a secure HTTPS reverse proxy (like Caddy or Cloudflare).
+>
+> ush.py comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law.
 
 ---
 
-## Problem
+## The Problem
 
 Many networks (ie: GCNAT) block inbound connections. This makes SSH or other remote shell protocols unusable. And cloudflare has it on a paywall.
 
-HTTPShell solves this by using an interactive shell over HTTP or HTTPS using standard web ports and proxy‑compatible traffic.
+`ush.py` solves this by multiplexing a full TTY session over standard POST requests, making it compatible with almost any reverse proxy (Cloudflare, Caddy, Nginx) and bypassing inbound port restrictions.
 
 ---
 
 ## Requirements
 
-- uv from Astral: https://astral.sh/uv
-- Linux system (server side)
-- PAM authentication enabled on the server
+* **Python 3.8+**
+* **Requests** (Client-side): `pip install requests`
 
-No additional dependencies are required. uv will handle everything automatically.
+The server side only supports Linux.
+The client side supports absolutely anything.
 
 ---
 
 ## Installation
 
-Grab uv from Astral:
-```
-# Linux
-wget -qO- https://astral.sh/uv/install.sh | sh
+Since `ush.py` is a single-file script, installation is a simple download:
 
-# Windows
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```bash
+sudo wget https://raw.githubusercontent.com/lspm-pkg/ush.py/refs/heads/main/v1.0.0.py -O /usr/bin/ush
+sudo chmod +x /usr/bin/ush
 ```
-
-Now download the single file from Releases:
-```
-# Linux
-sudo wget https://github.com/lspm-pkg/HTTPshell.py/releases/download/v1.0.2/HTTPshell.py -O /usr/bin/httpshell.py
-
-# Windows
-curl.exe -LO https://github.com/lspm-pkg/HTTPshell.py/releases/download/v1.0.2/HTTPshell.py
-```
-
-Make it executeable using `chmod +x /usr/bin/httpshell.py` on linux.
 
 ---
 
 ## Usage
 
-### Connect to a server using the client.
+### 1. Start the Server
 
-```
-# Linux
-httpshell.py username server-ip
+Run the server on the remote machine. It must be run as root to access `/bin/login` for PAM authentication.
 
-# Windows
-uv run httpshell.py username server-ip
-```
+```bash
+# Foreground mode
+sudo ush --server -p 8080
 
-You will be prompted for the user's password.
-
----
-
-### Start the server
-
-```
-sudo httpshell.py --server
+# Daemon mode (Background)
+# This uses more RAM for some reason
+sudo ush --server -p 8080 -d
 ```
 
-This will setup caddy and the backend server.
+*The server will display: `[ushs] server is running on :8080*`
 
-Install server on startup using `--server-install`.
+### 2. Connect via Client
+
+On your local machine, connect using the server's host/IP.
+
+```bash
+ush <host> -p 8080
+```
+
+*To exit the session, use the shortcut: `Ctrl + ]*`
 
 ---
 
 ## Features
 
-- Single file for client and server
-- Works over HTTP or HTTPS
-- Fully interactive shell
-- Supports bash, sh, zsh and others
-- Supports vim, nano, htop, top and other terminal applications
-- PTY based terminal for proper TTY behavior
-- PAM authentication using system users
-- Reverse proxy support, supports cloudflared out of the box
-- Works behind firewalls and restricted networks
-- Very Easy to use
+* Extreme Memory Efficiency: Includes a backpressure mechanism (`MAX_Q`) to prevent OOM (Out of Memory) crashes on tiny 32MB RAM servers when running high-output commands like `yes`.
+* PTY Powered: Supports `vim`, `htop`, `top`, and full shell interactivity with proper terminal resizing (`SIGWINCH` support).
+* Compressed & Fast: Highly optimized code for minimal overhead.
+* Proxy Friendly: Designed to work flawlessly behind Cloudflare, Caddy, and other reverse proxies.
 
 ---
 
 ## Contributing
 
-Pull requests and improvements are welcome.
-
-Security reviews are especially appreciated.
+`ush.py` aims to be the smallest, most reliable HTTP shell possible. Pull requests regarding further code compression, or better memory management are highly encouraged.
