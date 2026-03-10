@@ -1,6 +1,6 @@
 # ush.py (Unsecure Shell over HTTP)
 
-`ush.py` is an evolution of HTTPshell.py. It is a single-file, dependency-minimal remote shell that operates entirely over HTTP. It is specifically optimized for extremely resource-constrained environments (like 32MB RAM) and networks where inbound TCP access is restricted by GCNAT or aggressive firewalls.
+`ush.py` is an fork of HTTPshell.py. It is a single-file, dependency-minimal remote shell that operates entirely over HTTP. It is specifically optimized for extremely resource-constrained environments (like 32MB RAM) and networks where inbound TCP access is restricted by GCNAT or aggressive firewalls.
 
 By leveraging a PTY-based approach and smart backpressure management, `ush.py` provides a full interactive terminal experience over standard web traffic.
 
