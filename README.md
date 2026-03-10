@@ -3,6 +3,8 @@
 ![Payload](https://img.shields.io/badge/Payload-Keystroke--Level-blue)
 ![Security](https://img.shields.io/badge/No-Security-red)
 ![Madeinpy](https://img.shields.io/badge/Made_in-Python-yellow)
+![Yaris](https://img.shields.io/badge/Size-9.0_KB-orange)
+
 
 `ush.py` is an fork of HTTPshell.py. It is a single-file, dependency-minimal remote shell that operates entirely over HTTP. It is specifically optimized for extremely resource-constrained environments (like 32MB RAM) and networks where inbound TCP access is restricted by GCNAT or aggressive firewalls.
 
