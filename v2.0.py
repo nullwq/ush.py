@@ -1,16 +1,35 @@
 #!/usr/bin/env python3
-import sys,os,json,time,threading,argparse,platform,ipaddress
+import sys,os,json,time,threading,argparse,platform,ipaddress,signal,ctypes
 from queue import Queue,Empty
 from http.client import HTTPConnection
 M_BUF,IS_WIN=1024*1024,platform.system()=="Windows"
 if IS_WIN: import msvcrt
-else: import tty,termios,fcntl,struct,select,signal
+else: import tty,termios,fcntl,struct,select
 def http_post(h,p,path,headers=None,data=b""):
     c=HTTPConnection(h,p,timeout=5);hds=headers or {}
     if data:hds["Content-Length"]=str(len(data))
     c.request("POST",path,body=data,headers=hds);r=c.getresponse();d=r.read();c.close();return r.status,d
+_win_send_q=None
+_win_handler=None
+def _install_win_handler(q):
+    global _win_send_q,_win_handler
+    _win_send_q=q
+    if _win_handler is not None: return
+    HandlerType=ctypes.WINFUNCTYPE(ctypes.c_bool,ctypes.c_uint)
+    def _h(t):
+        if _win_send_q is None: return False
+        if t==0 or t==1:
+            try:_win_send_q.put(b'\x03');return True
+            except: return False
+        return False
+    _win_handler=HandlerType(_h)
+    ctypes.windll.kernel32.SetConsoleCtrlHandler(_win_handler,True)
 def run_c(h,p):
     send_q=Queue();out_q=Queue();stop=[0]
+    if IS_WIN:
+        try:
+            _install_win_handler(send_q)
+        except Exception: pass
     try:
         if IS_WIN: r,c=os.get_terminal_size().lines,os.get_terminal_size().columns
         else: r,c=struct.unpack("HH",fcntl.ioctl(0,21523,b'\x00'*8))
@@ -55,30 +74,36 @@ def run_c(h,p):
                     if msvcrt.kbhit():
                         ch=msvcrt.getwch()
                         if ch=='\x1d': stop[0]=1;break
-                        send_q.put(ch.encode())
+                        try: send_q.put(ch.encode())
+                        except: send_q.put(ch.encode('utf-8','ignore'))
                     else: time.sleep(0.001)
-            except KeyboardInterrupt: stop[0]=1
+            except Exception: stop[0]=1
         else:
-            old=termios.tcgetattr(0);tty.setraw(0);signal.signal(28,lambda *a:None)
+            old=termios.tcgetattr(0)
+            tty.setraw(0)
+            cur=termios.tcgetattr(0)
+            cur[3]=cur[3] & ~termios.ISIG
+            termios.tcsetattr(0,termios.TCSADRAIN,cur)
             try:
                 while not stop[0]:
                     if select.select([0],[],[],0.001)[0]:
                         ch=os.read(0,4096)
                         if b"\x1d" in ch: stop[0]=1;break
                         send_q.put(ch)
-            finally: termios.tcsetattr(0,2,old)
+            finally:
+                termios.tcsetattr(0,termios.TCSADRAIN,old)
     threading.Thread(target=tx,daemon=True).start();threading.Thread(target=rx,daemon=True).start()
     threading.Thread(target=output_thread,daemon=True).start();threading.Thread(target=poll_size,daemon=True).start()
     threading.Thread(target=input_thread,daemon=True).start()
-    try:
-        while not stop[0]: time.sleep(0.1)
-    except KeyboardInterrupt: stop[0]=1
+    while not stop[0]:
+        try: time.sleep(0.1)
+        except Exception: pass
     print("\nConnection closed.")
 sess={}
 if __name__=="__main__":
     p=argparse.ArgumentParser(description="ush.py v2.0");p.add_argument("--server","-s",action="store_true");p.add_argument("-p",type=int,default=8080);p.add_argument("-d",action="store_true");p.add_argument("host",nargs="?");a=p.parse_args()
     if a.host and "-p" not in sys.argv:
-        try: ipaddress.ip_address(a.host);
+        try: ipaddress.ip_address(a.host)
         except: a.p=80
     if a.server:
         if platform.system()!="Linux": sys.exit("Server runs Linux only")
