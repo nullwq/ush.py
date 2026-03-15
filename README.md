@@ -30,7 +30,6 @@ Many networks (ie: GCNAT) block inbound connections. This makes SSH or other rem
 ## Requirements
 
 * **Python 3.8+**
-* **Requests** (Client-side): `pip install requests`
 
 The server side only supports Linux.
 The client side supports absolutely anything.
@@ -39,12 +38,7 @@ The client side supports absolutely anything.
 
 ## Installation
 
-Since `ush.py` is a single-file script, installation is a simple download:
-
-```bash
-sudo wget https://raw.githubusercontent.com/lspm-pkg/ush.py/refs/heads/main/v1.0.0.py -O /usr/bin/ush
-sudo chmod +x /usr/bin/ush
-```
+Read the releases, there will be a install guide in there.
 
 ---
 
@@ -55,15 +49,8 @@ sudo chmod +x /usr/bin/ush
 Run the server on the remote machine. It must be run as root to access `/bin/login` for PAM authentication.
 
 ```bash
-# Foreground mode
 sudo ush --server -p 8080
-
-# Daemon mode (Background)
-# This uses more RAM for some reason
-sudo ush --server -p 8080 -d
 ```
-
-*The server will display: `[ushs] server is running on :8080*`
 
 ### 2. Connect via Client
 
