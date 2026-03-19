@@ -119,7 +119,7 @@ def run_c(h,p,verbose=False):
     print("\nConnection closed.")
 sess={}
 if __name__=="__main__":
-    p=argparse.ArgumentParser(description="ush.py v2.0");p.add_argument("--server","-s",action="store_true");p.add_argument("-p",type=int,default=8080);p.add_argument("-d",action="store_true");p.add_argument("-v","--verbose",action="store_true");p.add_argument("host",nargs="?");a=p.parse_args()
+    p=argparse.ArgumentParser(description="ush.py v2.1");p.add_argument("--server","-s",action="store_true");p.add_argument("-p",type=int,default=8080);p.add_argument("-d",action="store_true");p.add_argument("-v","--verbose",action="store_true");p.add_argument("host",nargs="?");a=p.parse_args()
     if a.host and "-p" not in sys.argv:
         try: ipaddress.ip_address(a.host)
         except: a.p=80
